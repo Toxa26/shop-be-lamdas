@@ -1,4 +1,4 @@
-import { products } from "../mockData.mjs";
+import products from "./mockData.mjs";
 
 export const getProductsList = async () => {
 	return {

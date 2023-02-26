@@ -1,4 +1,4 @@
-export const products = [
+export default [
 	{
 		"count": 4,
 		"description": "Short Product Description1",
