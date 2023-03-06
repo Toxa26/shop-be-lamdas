@@ -10,6 +10,9 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export const createProduct = async (event) => {
+	console.log('Creating product was called!');
+	console.log('Event:', event);
+
 	const ProductsTableName = process.env.TABLE_NAME_PRODUCTS;
 	const ProductsStockTableName = process.env.TABLE_NAME_PRODUCTS_STOCK;
 

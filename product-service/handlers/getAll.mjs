@@ -9,6 +9,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export const getProductsList = async () => {
+	console.log('Getting products list was called!');
+
 	const ProductsTableName = process.env.TABLE_NAME_PRODUCTS;
 	const ProductsStockTableName = process.env.TABLE_NAME_PRODUCTS_STOCK;
 
