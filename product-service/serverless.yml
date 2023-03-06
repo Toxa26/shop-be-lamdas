@@ -10,14 +10,20 @@ provider:
 
 functions:
   getAll:
-    handler: getAll.getProductsList
+    handler: handlers/getAll.getProductsList
     events:
       - http:
           path: /products
           method: get
   getById:
-    handler: getById.getProductById
+    handler: handlers/getById.getProductById
     events:
       - http:
           path: /products/{id}
           method: get
+  createProduct:
+    handler: handlers/addProduct.createProduct
+    events:
+      - http:
+          path: /products
+          method: post
