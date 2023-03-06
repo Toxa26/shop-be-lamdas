@@ -4,7 +4,9 @@ import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 
 const ddbClient = new DynamoDBClient({ region: "us-east-1" });
 const dynamoDB = DynamoDBDocumentClient.from(ddbClient);
-// import products from "./mock-data/mockData.mjs";
+
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export const getProductsList = async () => {
 	const ProductsTableName = process.env.TABLE_NAME_PRODUCTS;
@@ -24,19 +26,30 @@ export const getProductsList = async () => {
 		return Items;
 	}
 
-	const products = await getProducts();
-	const stocks = await getProductsStock();
+	try {
+		const products = await getProducts();
+		const stocks = await getProductsStock();
 
-	return {
-		statusCode: 200,
-		headers: {
-			"Access-Control-Allow-Origin": "*",
-			"Access-Control-Allow-Credentials": true,
-		},
-		body: JSON.stringify({
-			products: products.map((product) => ({
-				...product, count: stocks.find(stock => stock.product_id === product.id)?.count
-			})),
-		}),
-	};
+		return {
+			statusCode: 200,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Credentials": true,
+			},
+			body: JSON.stringify({
+				products: products.map((product) => ({
+					...product, count: stocks.find(stock => stock.product_id === product.id)?.count
+				})),
+			}),
+		};
+	} catch (err) {
+		return {
+			statusCode: 500,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Credentials": true,
+			},
+			body: JSON.stringify( { message: err.message || 'Something went wrong!' })
+		}
+	}
 }

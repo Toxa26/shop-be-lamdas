@@ -4,7 +4,9 @@ import { GetCommand } from '@aws-sdk/lib-dynamodb';
 
 const ddbClient = new DynamoDBClient({ region: "us-east-1" });
 const dynamoDB = DynamoDBDocumentClient.from(ddbClient);
-// import products from "./mockData.mjs";
+
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export const getProductById = async (event) => {
 	const ProductsTableName = process.env.TABLE_NAME_PRODUCTS;
@@ -36,29 +38,40 @@ export const getProductById = async (event) => {
 		return Item ? Item.count : 0;
 	};
 
-	const id = event.pathParameters.productId;
-	const product = await getProduct(id);
-	const count = await getCount(id);
+	try {
+		const { id } = event.pathParameters;
+		const product = await getProduct(id);
+		const count = await getCount(id);
 
-	if (product) {
+		if (product) {
+			return {
+				statusCode: 200,
+				headers: {
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Credentials": true,
+				},
+				body: JSON.stringify({ ...product, count }),
+			};
+		} else {
+			return {
+				statusCode: 404,
+				headers: {
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Credentials": true,
+				},
+				body: JSON.stringify({
+					message: `Product with ${id} id does not exist.`,
+				}),
+			};
+		}
+	} catch (err) {
 		return {
-			statusCode: 200,
+			statusCode: 500,
 			headers: {
 				"Access-Control-Allow-Origin": "*",
 				"Access-Control-Allow-Credentials": true,
 			},
-			body: JSON.stringify({ ...product, count }),
-		};
-	} else {
-		return {
-			statusCode: 404,
-			headers: {
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Credentials": true,
-			},
-			body: JSON.stringify({
-				message: `Product with ${id} id does not exist.`,
-			}),
-		};
+			body: JSON.stringify( { message: err.message || 'Something went wrong!' })
+		}
 	}
 };
