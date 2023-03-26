@@ -8,6 +8,11 @@ provider:
   stage: dev
   region: us-east-1
 
+  environment:
+    TABLE_NAME_PRODUCTS: 'Products'
+    TABLE_NAME_PRODUCTS_STOCK: 'Stock'
+    SQS_URL: "${cf:product-service-${self:provider.stage}.SQSQueueUrl}"
+
   iamRoleStatements:
     - Effect: "Allow"
       Action: "s3:ListBucket"
@@ -18,6 +23,11 @@ provider:
         - "s3:*"
       Resource:
         - "arn:aws:s3:::aws-az-shop-import/*"
+    - Effect: "Allow"
+      Action:
+        - "sqs:*"
+      Resource:
+        - "${cf:product-service-${self:provider.stage}.SQSQueueArn}"
 
 functions:
   upload:

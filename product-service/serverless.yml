@@ -8,6 +8,26 @@ provider:
   stage: dev
   region: us-east-1
 
+  environment:
+    TABLE_NAME_PRODUCTS: 'Products'
+    TABLE_NAME_PRODUCTS_STOCK: 'Stock'
+    SQS_URL:
+      Ref: 'SQSQueue'
+    SNS_ARN:
+      Ref: "SNSTopic"
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action: "dynamodb:*"
+      Resource: "*"
+    - Effect: "Allow"
+      Action: "sns:*"
+      Resource: "*"
+    - Effect: "Allow"
+      Action: "sqs:*"
+      Resource:
+        - Fn::GetAtt: [ 'SQSQueue', 'Arn' ]
+
 functions:
   getAll:
     handler: handlers/getAll.getProductsList
@@ -15,15 +35,65 @@ functions:
       - http:
           path: /products
           method: get
+          cors: true
   getById:
     handler: handlers/getById.getProductById
     events:
       - http:
           path: /products/{id}
           method: get
+          cors: true
   createProduct:
     handler: handlers/addProduct.createProduct
     events:
       - http:
           path: /products
           method: post
+          cors: true
+  catalogBatchProcess:
+    handler: handlers/catalogBatchProcess.catalogBatchProcess
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSQueue
+              - Arn
+          batchSize: 5
+
+resources:
+  Resources:
+    SQSQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: catalogItemsQueue
+    SNSTopic:
+      Type: "AWS::SNS::Topic"
+      Properties:
+        TopicName: createProductTopic
+    SNSSubscriptionCountZero:
+      Type: "AWS::SNS::Subscription"
+      Properties:
+        Endpoint: "zinchenko.toha@gmail.com"
+        Protocol: "email"
+        TopicArn:
+          Ref: "SNSTopic"
+    SNSSubscriptionCountNonZero:
+      Type: "AWS::SNS::Subscription"
+      Properties:
+        Endpoint: "someTestEmail@gmail.com"
+        Protocol: "email"
+        TopicArn:
+          Ref: "SNSTopic"
+        FilterPolicy:
+          count:
+            - numeric:
+                - "<"
+                - 5
+
+  Outputs:
+    SQSQueueUrl:
+      Value:
+        Ref: "SQSQueue"
+    SQSQueueArn:
+      Value:
+        Fn::GetAtt: [ "SQSQueue", "Arn" ]
