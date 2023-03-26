@@ -55,7 +55,9 @@ functions:
     events:
       - sqs:
           arn:
-            Fn::GetAtt: [ SQSQueue, Arn ]
+            Fn::GetAtt:
+              - SQSQueue
+              - Arn
           batchSize: 5
 
 resources:
@@ -75,8 +77,6 @@ resources:
         Protocol: "email"
         TopicArn:
           Ref: "SNSTopic"
-        FilterPolicy:
-          count: [3]
     SNSSubscriptionCountNonZero:
       Type: "AWS::SNS::Subscription"
       Properties:
@@ -85,7 +85,10 @@ resources:
         TopicArn:
           Ref: "SNSTopic"
         FilterPolicy:
-          count: [2]
+          count:
+            - numeric:
+                - "<"
+                - 5
 
   Outputs:
     SQSQueueUrl:

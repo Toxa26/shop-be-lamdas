@@ -16,37 +16,34 @@ export const catalogBatchProcess = async (event) => {
 	try {
 		const asyncRes = await Promise.all(event.Records.map(async ({ body }) => {
 			const product = JSON.parse(body);
+			const { id, title, description, price, count } = product;
+
 			product.count = +product.count;
 			product.price = +product.price;
 
 			await dynamoDB.send(new PutCommand({
 				TableName: process.env.TABLE_NAME_PRODUCTS,
-				Item: product,
+				Item: { id, title, description, price },
 			}));
 
 			await dynamoDB.send(new PutCommand({
 				TableName: process.env.TABLE_NAME_PRODUCTS_STOCK,
-				Item: { product_id: product.id, count: product.count }
+				Item: { product_id: id, count }
 			}));
+
+			const message = {
+				Subject: 'Product was added',
+				Message: JSON.stringify(product),
+				TopicArn: process.env.SNS_ARN,
+			};
+
+			await sns.publish(message).promise();
 		}));
-
-		const message = {
-			message: 'Product(s) successfully created',
-			result: asyncRes
-		};
-
-		const params = {
-			Message: JSON.stringify(message),
-			TopicArn: process.env.SNS_ARN
-		};
-
-		await sns.publish(params).promise();
 
 		return {
 			statusCode: 200,
 			body: JSON.stringify({ message: 'Products created successfully.' })
 		};
-
 	} catch (error) {
 		console.error(error);
 

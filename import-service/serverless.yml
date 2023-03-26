@@ -25,15 +25,9 @@ provider:
         - "arn:aws:s3:::aws-az-shop-import/*"
     - Effect: "Allow"
       Action:
-        - sqs:SendMessage
-        - sqs:ReceiveMessage
-        - sqs:DeleteMessage
-        - sqs:GetQueueAttributes
-      Resource: "*"
-    - Effect: "Allow"
-      Action:
         - "sqs:*"
-      Resource: "${cf:product-service-${self:provider.stage}.SQSQueueArn}"
+      Resource:
+        - "${cf:product-service-${self:provider.stage}.SQSQueueArn}"
 
 functions:
   upload:
