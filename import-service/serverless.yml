@@ -37,6 +37,12 @@ functions:
           path: /import
           method: get
           cors: true
+          authorizer:
+            name: "basicAuthorizer"
+            arn: "arn:aws:lambda:us-east-1:915810225096:function:authorization-service-dev-basicAuthorizer"
+            type: token
+            resultTtlInSeconds: 0
+#            identitySource: method.request.header.Authorization
   parse:
     handler: handlers/importFileParser.importFileParser
     events:

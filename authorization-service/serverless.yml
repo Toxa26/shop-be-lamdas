@@ -1,0 +1,25 @@
+service: authorization-service
+
+frameworkVersion: '3'
+useDotenv: true
+
+plugins:
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-east-1
+
+  environment:
+    Toxa26: ${env:Toxa26}
+
+functions:
+  basicAuthorizer:
+    handler: handlers/basicAuthorizer.basicAuthorizer
+    events:
+      - http:
+          path: ''
+          method: get
+          cors: true
